@@ -7,5 +7,5 @@ export class S5a extends Solver {
 	}
 }
 
-export class S5b extends S5a {
+export class S5b extends Solver {
 }
