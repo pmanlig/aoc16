@@ -1,0 +1,27 @@
+.line {
+	display: block;
+	margin: 0;
+	padding: 0;
+	width: 250px;
+	height: 5px;
+	line-height: 0;
+}
+
+.pixel {
+	width: 5px;
+	height: 5px;
+	display: inline-block;
+	margin: 0;
+	padding: 0;
+	line-height: 0;
+}
+
+.on {
+	color: black;
+	background-color: black;
+}
+
+.off {
+	color: white;
+	background-color: white;
+}
