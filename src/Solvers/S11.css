@@ -1,0 +1,18 @@
+.grid {
+	display: grid;
+	grid-template-columns: repeat(20, 40px);
+	grid-template-rows: repeat(4, 40px);
+	margin-top: 20px;
+}
+
+.cell {
+	margin: 0;
+	background-color: white;
+	display: inline-block;
+	border: none;
+}
+
+.item {
+	color: black;
+	border: 1px solid black;
+}
