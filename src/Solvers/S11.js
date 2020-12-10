@@ -182,7 +182,7 @@ export class S11a extends Solver {
 		let substances = [];
 		let moves = [];
 		input = input.split('\n').forEach(s => this.parse(s, contents, substances));
-		// let i = State.fromContents(contents, 3);
+		console.log(State.fromContents(contents, 3));
 		this.setState({ contents: contents, substances: substances, moves: 0, elevator: 3 });
 		setTimeout(() => this.move(moves, contents, substances), 500);
 	}
