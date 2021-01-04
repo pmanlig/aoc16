@@ -2,41 +2,86 @@
 import Solver from './Solver';
 import { md5 } from '../util/md5';
 
-export class S14a extends Solver {
-	valid(hashes, index) {
-		let hash = hashes[index]
-		for (let i = 0; i < hash.length - 3; i++) {
-			if (hash[i] === hash[i + 1] && hash[i] === hash[i + 2]) {
-				for (let j = index + 1; j < index + 1001; j++) {
-					if (hashes[j].includes(hash[i] + hash[i] + hash[i] + hash[i] + hash[i])) { return true; }
+class Hash {
+	constructor(salt, index) {
+		this.salt = salt;
+		this.index = index;
+		this.hash = md5(salt + index);
+		this.stretched = this.hash;
+		for (let n = 0; n < 2016; n++) {
+			this.stretched = md5(this.stretched);
+		}
+	}
+
+	nextHash() {
+		if (this.next === undefined) { this.next = new Hash(this.salt, this.index + 1); }
+		return this.next;
+	}
+
+	valid() {
+		let m = this.hash.match(/([a-z0-9])\1\1/);
+		if (null != m) {
+			let x = m[0] + m[0][0] + m[0][0];
+			for (let n = this.nextHash(); n.index <= this.index + 1000; n = n.nextHash()) {
+				if (n.hash.includes(x)) {
+					return true;
 				}
 			}
 		}
 		return false;
 	}
 
-	solve(input) {
-		let keys = [], secure = [];
-		let hashes = [], stretched = [];
-		let i = 0;
-		let firstIndex = 0, secondIndex = 0;
-		while (keys.length < 64 || secure.length < 64) {
-			let newHash = md5(input + i++);
-			hashes.push(newHash);
-			for (let j = 0; j < 2016; j++) {
-				newHash = md5(newHash);
-			}
-			stretched.push(newHash);
-			if (hashes.length > 1000 && keys.length < 64 && this.valid(hashes, i - 1001)) {
-				keys.push(hashes[i - 1001]);
-				if (keys.length === 64) { firstIndex = i - 1001; }
-			}
-			if (stretched.length > 1000 && secure.length < 64 && this.valid(stretched, i - 1001)) {
-				secure.push(stretched[i - 1001]);
-				if (secure.length === 64) { secondIndex = i - 1001; }
+	validStretched() {
+		let m = this.stretched.match(/([a-z0-9])\1\1/);
+		if (null != m) {
+			let x = m[0] + m[0][0] + m[0][0];
+			for (let n = this.nextHash(); n.index <= this.index + 1000; n = n.nextHash()) {
+				if (n.stretched.includes(x)) {
+					return true;
+				}
 			}
 		}
-		this.setState({ solution: `Index to produce 64th key: ${firstIndex}\nHash: ${hashes[firstIndex]}\nIndex to produce 64th stretched key: ${secondIndex}\nHash: ${stretched[secondIndex]}` });
+		return false;
+	}
+}
+
+export class S14a extends Solver {
+	generate(hash, keys, secure) {
+		const keys_needed = 64;
+		for (let i = 0; i < 100; i++) {
+			if (keys.length < keys_needed && hash.valid()) {
+				keys.push(hash.hash);
+				if (keys.length >= keys_needed) {
+					this.setState({ hash: hash.index, firstIndex: hash.index, hash1: hash.hash });
+				}
+			}
+			if (secure.length < keys_needed && hash.validStretched()) {
+				secure.push(hash.stretched);
+				if (secure.length >= keys_needed) {
+					this.setState({ hash: hash.index, secondIndex: hash.index, hash2: hash.stretched });
+				}
+			}
+			if (keys.length >= keys_needed && secure.length >= keys_needed) { return; }
+			hash = hash.nextHash();
+		}
+		this.setState({ hash: hash.index });
+		setTimeout(() => this.generate(hash, keys, secure), 1);
+	}
+
+	solve(input) {
+		// input = "abc";
+		setTimeout(() => this.generate(new Hash(input, 0), [], []), 1);
+	}
+
+	customRender() {
+		let { hash, firstIndex, secondIndex, hash1, hash2 } = this.state;
+		return <div>
+			<p>Hash index calculated: {hash}</p>
+			<p>Index to produce 64th key: {firstIndex}</p>
+			<p>Hash: {hash1}</p>
+			<p>Index to produce 64th stretched key: {secondIndex}</p>
+			<p>Stretched hash: {hash2}</p>
+		</div>;
 	}
 }
 
