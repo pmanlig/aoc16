@@ -28,6 +28,23 @@ export default class Solver extends React.Component {
 		}
 	}
 
+	componentWillUnmount() {
+		if (this.idleCallback) {
+			cancelIdleCallback(this.idleCallback);
+		}
+		if (this.idleTimeout) {
+			clearTimeout(this.idleTimeout);
+		}
+	}
+
+	runBackground(task) {
+		if ("requestIdleCallback" in window) {
+			this.idleCallback = requestIdleCallback(task);
+		} else {
+			this.idleTimeout = setTimeout(task, 1);
+		}
+	}
+
 	run(auto) {
 		try {
 			if (this.runControls) {
