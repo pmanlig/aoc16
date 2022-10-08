@@ -166,12 +166,16 @@ export class S24a extends Solver {
 	}
 
 	visitAndReturn(from, to) {
-		if (to.length === 0) { return from.paths[0].steps.length; }
+		if (to.length === 0) { return { paths: [from.paths[0].steps], dist: from.paths[0].steps.length }; }
 		let shortest = null;
 		to.forEach(n => {
-			let dist = this.visitAndReturn(n, to.filter(d => d !== n)) + from.paths[n.num].steps.length;
-			if (shortest === null || dist < shortest) {
-				shortest = dist;
+			let path = this.visitAndReturn(n, to.filter(d => d !== n));
+			path = {
+				paths: [from.paths[n.num].steps].concat(path.paths),
+				dist: path.dist + from.paths[n.num].steps.length
+			}
+			if (shortest === null || path.dist < shortest.dist) {
+				shortest = path;
 			}
 		});
 		return shortest;
@@ -184,9 +188,12 @@ export class S24a extends Solver {
 		let pos = this.findPositions(map);
 		pos.forEach(p => {
 			this.findPaths(p, pos, map);
-			p.paths.forEach(p => map.drawPath(ctx, p.steps))
+			// p.paths.forEach(p => map.drawPath(ctx, p.steps))
 		});
-		this.setState({ shortest: this.visit(pos[0], pos.slice(1)), roundtrip: this.visitAndReturn(pos[0], pos.slice(1)) });
+		let shortest = this.visit(pos[0], pos.slice(1));
+		let roundtrip = this.visitAndReturn(pos[0], pos.slice(1));
+		roundtrip.paths.forEach(p => map.drawPath(ctx, p));
+		this.setState({ shortest: shortest, roundtrip: roundtrip.dist });
 	}
 
 	customRender() {
