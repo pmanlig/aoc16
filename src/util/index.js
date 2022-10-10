@@ -5,3 +5,4 @@ export { drawCircle, drawFilledCircle, drawLine, drawFilledRect } from './Drawin
 export { md5 } from './md5';
 export function numericSortAsc(a, b) { return a - b; }
 export function numericSortDesc(a, b) { return b - a; }
+export { PixelMap } from './PixelMap';
